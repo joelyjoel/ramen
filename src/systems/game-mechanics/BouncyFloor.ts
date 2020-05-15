@@ -17,10 +17,11 @@ export const BouncyFloorSystem = new System({
         velocity:VelocityComponentState;
         bouncyFloor: BouncyFloorComponentState;
     }, io:IOObject) {
+        let {bounce = 1} = e.bouncyFloor
         if(e.position.y > e.bouncyFloor.y) {
             return {
                 position: {y: e.bouncyFloor.y},
-                velocity: {yspeed: -Math.abs(e.velocity.yspeed) * (e.bouncyFloor.bounce || 1)},
+                velocity: {yspeed: -Math.abs(e.velocity.yspeed) * bounce},
             }
         } else {
             return {}
