@@ -1,17 +1,12 @@
 import { EntityComponentSystem } from "./EntityComponentSystem";
 import { System } from "./systems/system";
 import { GameState } from "./GameState";
+import { UserInputReporter, UserInputReport } from "./UserInputReporter";
 
-
-export interface DownKeys {
-    [charCode:number]: boolean
-}
 export interface IOObject {
     game?: Game;
     ctx: CanvasRenderingContext2D;
-    userInput: {
-        downKeys: DownKeys;
-    };
+    userInput: UserInputReport
     /** The number of seconds elapsed since the previous frame */
     elapsed: number;
 }
@@ -30,8 +25,10 @@ export class Game {
     ctx: CanvasRenderingContext2D | null;
     frameRate: number;
     frameInterval: number;
-    downKeys: DownKeys;
     tickTimer: NodeJS.Timeout;
+    efficiencyMessage: string;
+    onenterframe: () => void;
+    uireporter: UserInputReporter;
 
     constructor(options: GameConstructorOptions) {
         let {
@@ -40,6 +37,8 @@ export class Game {
             initialState,
             frameRate = 32
         } = options;
+
+        this.uireporter = new UserInputReporter
 
         if(canvas)
             this.adoptCanvas(canvas);
@@ -52,7 +51,6 @@ export class Game {
         this.frameRate = frameRate
         this.frameInterval = 1/this.frameRate
 
-        this.downKeys = {};
     }
 
     start() {
@@ -60,6 +58,9 @@ export class Game {
     }
 
     tick() {
+        const tsStart = Date.now()
+        if(this.onenterframe)
+            this.onenterframe();
 
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
@@ -67,12 +68,14 @@ export class Game {
             ctx: this.ctx,
             game: this,
             elapsed: this.frameInterval,
-            userInput: {
-                downKeys: this.downKeys,
-            }
+            userInput: this.uireporter.getReport(),
         };
         
         this.ecs.advanceState(io);
+
+        let tsEnd = Date.now();
+
+        this.efficiencyMessage = `${tsEnd-tsStart} / ${this.frameInterval * 1000}ms`
     }
 
     adoptCanvas(canvas:HTMLCanvasElement) {
@@ -82,25 +85,13 @@ export class Game {
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
 
-        // Add input listeners
-
-        window.addEventListener('keydown', e => {
-            e.preventDefault();
-
-            this.downKeys[e.keyCode] = true;
-        }, false)
-
-        window.addEventListener('keyup', e => {
-            e.preventDefault();
-
-            this.downKeys[e.keyCode] = false;
-        }, false)
+        this.uireporter.adoptCanvas(canvas);
     }
 
     releaseCanvas() {
         this.canvas = null;
         this.ctx = null
 
-        // TODO: Remove event listeners
+        this.uireporter.releaseCanvas();
     }
 }

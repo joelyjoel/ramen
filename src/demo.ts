@@ -6,6 +6,7 @@ import { LabelSystem } from "./systems/rendering/Label";
 import { BouncyFloorSystem } from "./systems/game-mechanics/BouncyFloor";
 import { LeftRightControlSystem } from "./systems/game-mechanics/LeftRightControl";
 import { FrictionSystem } from "./systems/game-mechanics/Friction";
+import { TimeOutSystem } from "./systems/game-mechanics/TimeOut";
 
 
 let myGame = new Game({
@@ -17,6 +18,7 @@ let myGame = new Game({
         LabelSystem,
         LeftRightControlSystem,
         FrictionSystem,
+        TimeOutSystem,
     ],
     initialState: {
         frame: 0,
@@ -34,7 +36,14 @@ let myGame = new Game({
                 label: {text:'Joel'},
                 bouncyFloor: {y: 100, bounce: 0},
                 leftRightControl: {acceleration: 100},
-                friction: {friction: 0.95},
+                // friction: {friction: 0.99},
+            },
+
+            1: {
+                id: 1,
+                position: {x: 25, y: 50},
+                label: {text: 'I will dissappear in 5 seconds'},
+                timeOut: {timeRemaining: 5},
             }
         }
     }
@@ -43,8 +52,14 @@ let myGame = new Game({
 window.onload = function() {
     let canvas = document.createElement('canvas')
     document.body.appendChild(canvas);
-
     myGame.adoptCanvas(canvas)
 
-    myGame.start()
+    let stateView = document.createElement('pre')
+    document.body.appendChild(stateView);
+    myGame.onenterframe = function() {
+        stateView.innerText = JSON.stringify(this.ecs.stateTracker.state, undefined, 4) + '\n' + myGame.efficiencyMessage;
+    }
+
+
+    myGame.start();
 }
