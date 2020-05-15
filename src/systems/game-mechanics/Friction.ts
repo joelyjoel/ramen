@@ -10,6 +10,7 @@ export const FrictionSystem = new System({
     writes: ['velocity'],
 
     individualBehaviour(e: {friction:FrictionComponentState, velocity:VelocityComponentState}) {
+        // TODO: Apply friction according to elapsed frame time.
         return {
             velocity: {
                 xspeed: e.velocity.xspeed * e.friction.friction,
