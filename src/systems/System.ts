@@ -1,48 +1,84 @@
 import { IOObject } from "../Game";
 import { ComponentState } from "../EntityComponentSystem";
-import { getEntityGroupName, EntityUpdate } from "../GamestateTracker";
+import { getEntityGroupName, EntityUpdate, GameStateUpdate } from "../GamestateTracker";
+import { Entity } from "../GameState";
 
-export interface GlobalBehaviourResult {
-    modify: {
-        [id: number]: EntityUpdate,
-    },
-    create: {}
+export interface Group<entitystate> {
+    [id: number]: entitystate;
 }
-export type GlobalBehaviour = (matches: {id: number, [componentName: string]: ComponentState}[], io:IOObject) => {id: number, [componentName: string]: ComponentState}[]
-export type IndividualBehaviour = (match: {[componentName: string]: ComponentState}, io:IOObject) => {[componentName: string]: ComponentState}
-
 
 export interface SystemConstructorOptions {
-    reads: string[];
+    reads: string[][];
     writes?: string[];
-    behaviour?:GlobalBehaviour | null;
-    individualBehaviour:IndividualBehaviour | null;
+    spawns?:boolean;
+    deletes?: boolean;
 }
+
+/** Base class for all systems */
 export class System {
-    reads: string[];
-    writes: string[];
+    readonly reads: string[][];
+    readonly writes: string[];
+    readonly spawns: boolean;
+    readonly groupNames: string[];
+    readonly deletes: boolean;
 
-    /** Observe-only systems do not effect the game state. For example, a sprite rendering component. */
-    observeOnly?: boolean;
-    behaviour?: GlobalBehaviour;
-    individualBehaviour?: IndividualBehaviour;
-    groupName: string;
-
-    constructor(options: SystemConstructorOptions) {
+    constructor(options:SystemConstructorOptions) {
         const {
-            reads, 
-            writes = [], 
-            behaviour = null, 
-            individualBehaviour = null
-        } = options;
+            reads,
+            writes = [],
+            spawns = false,
+            deletes = false,
+        } = options
 
-        // TODO: Change back to just one field: components
         this.reads = reads;
         this.writes = writes;
+        this.spawns = spawns;
+        this.deletes = deletes;
 
-        this.groupName = getEntityGroupName(this.reads)
+        this.groupNames = this.reads.map(components => getEntityGroupName(components));
+    }
 
-        this.behaviour = behaviour;
-        this.individualBehaviour = individualBehaviour;
+    behaviour(groups: Group<any>[], io:IOObject):GameStateUpdate {
+        throw `Behaviour is not implemented for this system.`
+    }
+}
+
+export interface IntrospectiveSystemConstructorOptions {
+    reads: string[];
+    writes?: string[];
+    deletes?: boolean;
+}
+
+/** Introspective systems modify one entity state at a time. */
+export class IntrospectiveSystem<entitystate> extends System {
+
+    constructor(options:IntrospectiveSystemConstructorOptions) {
+        super({
+            reads: [options.reads],
+            writes: options.writes || [],
+            deletes: options.deletes || false,
+            spawns: false, // No introspective system can spawn new entities.
+        })
+    }
+
+    behaviour(groups:Group<entitystate>[], io:IOObject):GameStateUpdate {
+        // There should be just the one group
+        let group = groups[0];
+
+        let updates:GameStateUpdate = {}
+        for(let id in group) {
+            let e = group[id];
+            let result = this.individualBehaviour(e, io);
+            if(result === undefined)
+                continue;
+            else
+                updates[id] = result;
+        }
+
+        return updates;
+    }
+
+    individualBehaviour(e:entitystate, io:IOObject):EntityUpdate|null|undefined {
+        throw `Behaviour of introspective system is not defined.`
     }
 }

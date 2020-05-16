@@ -1,4 +1,4 @@
-import { System } from "../system";
+import { System, IntrospectiveSystem } from "../system";
 import { VelocityComponentState } from "./Velocity";
 import { IOObject, Game } from "../../Game";
 
@@ -6,9 +6,13 @@ export interface LeftRightControlComponentState {
     acceleration: number;
 }
 
-export const LeftRightControlSystem = new System({
-    reads: ['velocity', 'leftRightControl'],
-    writes: ['velocity'],
+export class LeftRightControlSystem extends IntrospectiveSystem<{velocity: VelocityComponentState, leftRightControl: LeftRightControlComponentState}> {
+    constructor() {
+        super({
+            reads: ['velocity', 'leftRightControl'],
+            writes: ['velocity'],
+        })
+    }
 
     individualBehaviour(e:{velocity: VelocityComponentState; leftRightControl: LeftRightControlComponentState}, io:IOObject) {
         if(io.userInput.downKeys[37]) {
@@ -21,4 +25,4 @@ export const LeftRightControlSystem = new System({
         } else
             return {}
     }
-})
+}

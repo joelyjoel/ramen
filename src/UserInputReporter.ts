@@ -59,7 +59,7 @@ export class UserInputReporter {
     }
 
     handleKeyDown(e:KeyboardEvent) {
-        console.log(`handleKeyDown(${e.key})`)
+        // console.log(`handleKeyDown(${e.key})`)
         this.downKeys[e.keyCode] = true;
 
         if(!e.metaKey && !e.ctrlKey && !e.altKey) {
@@ -70,13 +70,12 @@ export class UserInputReporter {
                 this.message = this.message.slice(0, -1)
             else if(e.keyCode == 13)
                 this.sendMessage = true;
-            console.log(this.message);
         }
 
         e.preventDefault();
     }
     handleKeyUp(e:KeyboardEvent) {
-        console.log(`## handleKeyUp(${e})`)
+        // console.log(`## handleKeyUp(${e})`)
         this.downKeys[e.keyCode] = false;
 
         e.preventDefault();

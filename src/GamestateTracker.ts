@@ -4,7 +4,8 @@ import { deepOverwrite, entityHasComponents } from "./util";
 import { ComponentState } from "./EntityComponentSystem";
 
 export interface GameStateUpdate {
-    [key: number]: EntityUpdate;
+    create?: EntityUpdate[];
+    [key: number]: EntityUpdate | null;
 }
 
 export interface EntityUpdate {
@@ -33,7 +34,7 @@ export class GameStateTracker {
         [name: string]: EntityGroup;
     };
 
-    constructor(initialState:GameState, groups:string[][]) {
+    constructor(initialState:GameState, groups:string[][] = []) {
         this.setState(initialState);
         for(let group of groups)
             this.addGroup(group);
@@ -70,16 +71,35 @@ export class GameStateTracker {
         return this.groups[name];
     }
 
-    modifyState(updates) {
+    fetchGroupState(name: string) {
+        let ids = this.groups[name].entities;
+        let substate = {}
+        for(let id of ids)
+            substate[id] = this.state.entities[id];
+        
+        return substate
+    }
+
+    modifyState(updates:GameStateUpdate) {
         // For each entity,
+        if(updates.create) {
+            for(let newEntity of updates.create) {
+                let id = this.generateNewEntityId();
+                this.createEntity(id, {id, ...newEntity});
+            }
+        }
         for(let id in updates) {
-            if(updates[id] == undefined) {
+            // Skip special field(s)
+            if(id == 'create')
+                continue;
+
+            if(updates[id] === undefined) {
                 // Skip, maybe log a warning because this shouldn't happen.
                 console.warn("This shouldn't happen.")
                 continue;
             }
 
-            if(updates[id] == null) {
+            if(updates[id] === null) {
                 // Delete entity
                 this.deleteEntity(id);
             } else {
@@ -89,7 +109,9 @@ export class GameStateTracker {
                     this.modifyEntity(parseInt(id), updates[id]);
                 } else {
                     // otherwise create the entity.
-                    this.createEntity(parseInt(id), updates[id]);
+                    // this.createEntity(parseInt(id), updates[id]);
+                    // On second thoughts i dont think this should be allowed
+                    throw "Attempt to modify entity which does not exist"
                 }
             }
         }
@@ -111,14 +133,14 @@ export class GameStateTracker {
         }
     }
 
-    createEntity(id:number, initialState) {
+    createEntity(id:number, initialState:Entity) {
         let e = {id};
         this.state.entities[id] = e;
 
         this.modifyEntity(id, initialState);
     }
 
-    modifyEntity(id:number, update) {
+    modifyEntity(id:number, update:EntityUpdate) {
         const e = this.state.entities[id];
         for(let component in update) {
             if(update[component] == null) {
@@ -148,7 +170,6 @@ export class GameStateTracker {
         }
     }
 
-    // TODO: setState() function
     setState(state:GameState) {
         this.state = state;
         this.rebuildGroups();
@@ -163,5 +184,12 @@ export class GameStateTracker {
 
         for(let components of groupDefs)
             this.addGroup(components);
+    }
+
+    generateNewEntityId() {
+        let id = Object.keys(this.state.entities).length;
+        while(this.state.entities[id])
+            ++id;
+        return id;
     }
 }

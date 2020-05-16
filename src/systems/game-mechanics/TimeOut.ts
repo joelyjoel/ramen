@@ -1,13 +1,19 @@
-import { System } from "../system";
+import { System, IntrospectiveSystem } from "../system";
 import { IOObject } from "../../Game";
 
 export interface TimeOutComponentState {
     timeRemaining: number;
 }
 
-export const TimeOutSystem = new System({
-    reads: ['timeOut'],
-    
+export class TimeOutSystem extends IntrospectiveSystem<{timeOut:TimeOutComponentState}> {
+
+    constructor() {
+        super({
+            reads: ['timeOut'],
+            deletes: true,
+        })
+    }
+
     individualBehaviour(e: {timeOut:TimeOutComponentState}, io:IOObject) {
         let timeRemaining = e.timeOut.timeRemaining - io.elapsed;
 
@@ -17,4 +23,5 @@ export const TimeOutSystem = new System({
             // Delete the entitiy
             return null;
     }
-})
+}
+
