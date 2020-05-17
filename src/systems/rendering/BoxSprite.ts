@@ -1,6 +1,8 @@
 import { System, IntrospectiveSystem } from "../system";
 import { PositionComponentState } from "../game-mechanics/Position";
 import { IOObject } from "../../Game";
+import { RenderSystem } from "./RenderSystem";
+import { Renderer } from "../../Renderer";
 
 export interface BoxSpriteComponentState {
     color: string;
@@ -37,7 +39,7 @@ export interface BoxSpriteComponentState {
 
 
 /** @deprecated */
-export class BoxSpriteSystem extends IntrospectiveSystem<{position: PositionComponentState, boxSprite:BoxSpriteComponentState}> {
+export class BoxSpriteSystem extends RenderSystem<{position: PositionComponentState, boxSprite:BoxSpriteComponentState}> {
     constructor() {
         super({
             reads: ['position', 'boxSprite'],
@@ -45,22 +47,18 @@ export class BoxSpriteSystem extends IntrospectiveSystem<{position: PositionComp
     }
 
     individualBehaviour(e: {position: PositionComponentState, boxSprite:BoxSpriteComponentState}, io:IOObject) {
-        if(io.ctx) {
-            const ctx = io.ctx;
-            const {top=0, left=0, right=0, bottom=0, color='#ff0000'} = e.boxSprite;
-            const {x, y} = e.position;
+        const ctx = this.renderer.ctx;
+        const {top=0, left=0, right=0, bottom=0, color='#ff0000'} = e.boxSprite;
+        const {x, y} = e.position;
 
-            ctx.fillStyle = color;
-            ctx.fillRect(
-                x - left,
-                y - top,
-                left + right,
-                top + bottom
-            );
+        ctx.fillStyle = color;
+        ctx.fillRect(
+            x - left,
+            y - top,
+            left + right,
+            top + bottom
+        );
 
-            return {}
-        } else {
-            throw 'BoxSprite system requires a rendering context.';
-        }
+        return {}
     }
 }

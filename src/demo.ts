@@ -15,12 +15,14 @@ let myGame = new Game({
         new GravitySystem,
         new VelocitySystem,
         new BouncyFloorSystem({y: 200}),
-        new BoxSpriteSystem,
-        new LabelSystem,
         new LeftRightControlSystem,
         new MessageSystem,
         new FrictionSystem,
         new TimeOutSystem,
+    ],
+    renderSystems: [
+        new BoxSpriteSystem,
+        new LabelSystem,
     ],
     initialState: {
         frame: 0,

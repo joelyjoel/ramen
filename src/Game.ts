@@ -2,10 +2,11 @@ import { EntityComponentSystem } from "./EntityComponentSystem";
 import { System } from "./systems/system";
 import { GameState } from "./GameState";
 import { UserInputReporter, UserInputReport } from "./UserInputReporter";
+import { Renderer } from "./Renderer";
+import { RenderSystem } from "./systems/rendering/RenderSystem";
 
 export interface IOObject {
     game?: Game;
-    ctx: CanvasRenderingContext2D;
     userInput: UserInputReport
     /** The number of seconds elapsed since the previous frame */
     elapsed: number;
@@ -14,6 +15,7 @@ export interface IOObject {
 export interface GameConstructorOptions {
     canvas?: HTMLCanvasElement;
     systems: System[];
+    renderSystems: RenderSystem<any>[];
     initialState: GameState;
     frameRate?: number;
 }
@@ -22,23 +24,26 @@ export interface GameConstructorOptions {
 export class Game {
     ecs: EntityComponentSystem;
     canvas: HTMLCanvasElement | null;
-    ctx: CanvasRenderingContext2D | null;
     frameRate: number;
     frameInterval: number;
     tickTimer: NodeJS.Timeout;
     efficiencyMessage: string;
     onenterframe: () => void;
     uireporter: UserInputReporter;
+    renderer: Renderer;
 
     constructor(options: GameConstructorOptions) {
         let {
             canvas,
             systems,
+            renderSystems,
             initialState,
             frameRate = 32
         } = options;
 
         this.uireporter = new UserInputReporter
+
+        this.renderer = new Renderer({canvas, systems:renderSystems, initialState})
 
         if(canvas)
             this.adoptCanvas(canvas);
@@ -58,40 +63,27 @@ export class Game {
     }
 
     tick() {
-        const tsStart = Date.now()
         if(this.onenterframe)
             this.onenterframe();
 
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-
         let io:IOObject = {
-            ctx: this.ctx,
             game: this,
             elapsed: this.frameInterval,
             userInput: this.uireporter.getReport(),
         };
         
-        this.ecs.advanceState(io);
+        let stateUpdate = this.ecs.advanceState(io);
 
-        let tsEnd = Date.now();
-
-        this.efficiencyMessage = `${tsEnd-tsStart} / ${this.frameInterval * 1000}ms`
+        this.renderer.renderUpdate(stateUpdate, io);
     }
 
     adoptCanvas(canvas:HTMLCanvasElement) {
         if(this.canvas)
-            this.releaseCanvas();
+            throw new Error('Game already has a canvas element.');
             
         this.canvas = canvas;
-        this.ctx = canvas.getContext('2d');
 
+        this.renderer.adoptCanvas(canvas);
         this.uireporter.adoptCanvas(canvas);
-    }
-
-    releaseCanvas() {
-        this.canvas = null;
-        this.ctx = null
-
-        this.uireporter.releaseCanvas();
     }
 }

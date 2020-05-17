@@ -1,6 +1,6 @@
 import { GameState, Entity } from "./GameState";
 import { timingSafeEqual } from "crypto";
-import { deepOverwrite, entityHasComponents } from "./util";
+import { deepAssign, entityHasComponents } from "./util";
 import { ComponentState } from "./EntityComponentSystem";
 
 export interface GameStateUpdate {
@@ -155,7 +155,7 @@ export class GameStateTracker {
 
             } else if(e[component]) {
                 // modify the component
-                deepOverwrite(e[component], update[component])
+                deepAssign(e[component], update[component])
 
             } else {
                 // add the component

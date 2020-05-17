@@ -4,10 +4,10 @@ import { Entity } from "./GameState";
  * 
  * Note: This function is non-functional, it modifies the `original` argument.
  */
-export function deepOverwrite(original:any, updates:any) {
+export function deepAssign(original:any, updates:any) {
     if(typeof original === 'object' && typeof updates === 'object') {
         for(let key in updates) {
-            original[key] = deepOverwrite(original[key], updates[key]);
+            original[key] = deepAssign(original[key], updates[key]);
         }
         return original;
     } else

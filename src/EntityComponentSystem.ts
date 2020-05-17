@@ -2,9 +2,28 @@
 import { System } from "./systems/system";
 import { IOObject } from "./Game";
 
-import { GameStateTracker } from "./GamestateTracker";
+import { GameStateTracker, GameStateUpdate } from "./GamestateTracker";
+import { deepAssign } from "./util";
 
+export function mergeGameStateUpdates(a:GameStateUpdate, b: GameStateUpdate) {
+    if(b.create) {
+        if(a.create)
+            a.create.push(...b.create);
+        else
+            a.create = [...b.create];
+    }
 
+    for(let id in b) {
+        if(id == 'create')
+            continue;
+        
+        if(a[id])
+            // WARNING: Could run into shared memory problems with this.
+            deepAssign(a[id], b[id]);
+        else
+            a[id] = b[id];
+    }
+}
 
 export interface ComponentState {};
 
@@ -25,6 +44,8 @@ export class EntityComponentSystem {
     }
 
     advanceState(io:IOObject) {
+        let stateUpdate:GameStateUpdate = {};
+
         // Loop through the systems,
         for(let system of this.systems) {
             // Select groups
@@ -33,14 +54,15 @@ export class EntityComponentSystem {
             )
 
             // Apply behaviour to the matches
-            let update = system.behaviour(groups, io);
-            if(update != undefined)
-                this.stateTracker.modifyState(update);
+            let groupUpdate = system.behaviour(groups, io);
+            if(groupUpdate != undefined) {
+                this.stateTracker.modifyState(groupUpdate);
 
-
-            // let results = system.behaviour(matches);
-
+                mergeGameStateUpdates(stateUpdate, groupUpdate);
+            }
         }
+
+        return stateUpdate;
     }
 }
 
