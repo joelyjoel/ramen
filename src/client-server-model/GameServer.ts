@@ -1,0 +1,83 @@
+import { GameDefinition } from "./GameDefinition";
+import { EntityComponentSystem } from "../EntityComponentSystem";
+import { UserInputReport, mergeUserInputReports, emptyUIReport } from "../UserInputReporter";
+
+export interface GameServerConstructorOptions {
+    game: GameDefinition;
+    socketio: SocketIO.Server;
+}
+
+export interface GameServerPlayer {
+    socker: SocketIO.Socket;
+    playerIndex: number;
+}
+
+export class GameServer {
+    ecs: EntityComponentSystem;
+    uireports: UserInputReport[];
+    frameRate: number;
+    /** Duration of a frame in seconds. */
+    frameInterval: number;
+    socketio: SocketIO.Server;
+    players: any;
+    gameDefinition: GameDefinition;
+
+    constructor({game, socketio}:GameServerConstructorOptions) {
+        this.ecs = new EntityComponentSystem({
+            initialState: game.initialState,
+            systems: game.systems,
+        })
+
+        this.gameDefinition = game
+
+        this.frameRate = game.frameRate;
+        this.frameInterval = 1/this.frameRate;
+
+        this.socketio = socketio;
+        this.socketio.on('connection', socket => {
+            this.addPlayer(socket);
+        })
+        
+        this.players = []
+
+        this.uireports = []
+    }
+
+    addPlayer(socket:SocketIO.Socket) {
+        let playerIndex = this.players.length;
+        socket.on('uireport', (uireport:UserInputReport) => {
+            // console.log(uireport)
+            this.uireports[playerIndex] = mergeUserInputReports(this.uireports[playerIndex], uireport);
+        })
+
+        // Modify game state
+        let stateUpdate = this.gameDefinition.addPlayer(playerIndex, this.ecs.currentState)
+        this.uireports.push(emptyUIReport())
+        this.ecs.updateState(stateUpdate)
+        socket.broadcast.emit('state update', stateUpdate);
+        socket.emit('initial state', this.ecs.currentState);
+
+        this.players.push({
+            socket,
+            playerIndex,
+        })
+    }
+
+    tick() {
+        let userInput = this.uireports;
+        let stateUpdate = this.ecs.advanceState({
+            elapsed: this.frameInterval,
+            userInput,
+        })
+        this.socketio.emit('state update', stateUpdate);
+        this.clearUIReports();
+    }
+
+    start() {
+        setInterval(() => this.tick(), this.frameInterval * 1000)
+    }
+
+    clearUIReports() {
+        this.uireports = this.uireports.map(() => emptyUIReport());
+    }
+}

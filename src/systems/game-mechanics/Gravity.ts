@@ -1,6 +1,6 @@
 import { System, IntrospectiveSystem } from "../system";
 import { VelocityComponentState } from "./Velocity";
-import { IOObject, Game } from "../../Game";
+import { IOObject } from "../../EntityComponentSystem";
 
 export interface GravityComponentState {
 }

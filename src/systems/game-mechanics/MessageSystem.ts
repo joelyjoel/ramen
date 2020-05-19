@@ -1,5 +1,5 @@
 import { System, Group } from "../system";
-import { IOObject } from "../../Game";
+import { IOObject } from "../../EntityComponentSystem";
 import { PositionComponentState } from "./Position";
 import { GameStateUpdate } from "../../GamestateTracker";
 
@@ -16,15 +16,16 @@ export class MessageSystem extends System {
     }
     behaviour(groups:[Group<{message: MessageComponentState, position:PositionComponentState}>], io:IOObject):GameStateUpdate {
         let group = groups[0];
-        const message = io.userInput.message
-        if(message) {
-            for(let id in group) {
-                let e = group[id];
+
+        for(let id in group) {
+            let e = group[id];
+            const userInput = io.userInput[e.message.user]
+            if(userInput.message)
                 if(e.message.user == 0) {
                     // Create a new message
                     return {
                         create: [{
-                            label: {text: message},
+                            label: {text: userInput.message},
                             position: {
                                 x: e.position.x,
                                 y: e.position.y,
@@ -37,7 +38,6 @@ export class MessageSystem extends System {
                         }]
                     }
                 }
-            }
         }
         return {}
     }

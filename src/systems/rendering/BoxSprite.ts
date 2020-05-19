@@ -1,8 +1,8 @@
 import { System, IntrospectiveSystem } from "../system";
 import { PositionComponentState } from "../game-mechanics/Position";
-import { IOObject } from "../../Game";
+import { IOObject } from "../../EntityComponentSystem";
 import { RenderSystem } from "./RenderSystem";
-import { Renderer } from "../../Renderer";
+
 
 export interface BoxSpriteComponentState {
     color: string;

@@ -1,7 +1,6 @@
-import { IOObject } from "../Game";
-import { ComponentState } from "../EntityComponentSystem";
+import { IOObject } from "../EntityComponentSystem";
 import { getEntityGroupName, EntityUpdate, GameStateUpdate } from "../GamestateTracker";
-import { Entity } from "../GameState";
+
 
 export interface Group<entitystate> {
     [id: number]: entitystate;

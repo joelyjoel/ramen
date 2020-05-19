@@ -24,6 +24,7 @@ export class UserInputReporter {
     constructor() {
         this.message = "";
         this.downKeys = {};
+        this.clicks = [];
     }
 
     adoptCanvas(canvas:HTMLCanvasElement) {
@@ -44,12 +45,22 @@ export class UserInputReporter {
         this.canvas.removeEventListener('mousedown', this.handleMouseDown);
     }
 
+    previewReport():UserInputReport {
+        return {
+            downKeys:this.downKeys,
+            clicks: this.clicks,
+            message: this.sendMessage ? this.message : undefined,
+        }
+    }
+
     getReport():UserInputReport {
         let report = {
             downKeys:this.downKeys,
             clicks: this.clicks,
             message: this.sendMessage ? this.message : undefined,
         }
+
+        // Clear the report
         this.clicks = [];
         if(this.sendMessage)
             this.message = '';
@@ -86,5 +97,38 @@ export class UserInputReporter {
         this.clicks.push({x: e.clientX, y: e.clientY})
 
         // e.preventDefault();
+    }
+}
+
+export function mergeUserInputReports(a:UserInputReport, b:UserInputReport):UserInputReport {
+    let message:string = undefined;
+    if(a.message) {
+        if(b.message)
+            message = `${a.message}\n${b.message}`;
+        else
+            message = a.message
+    } else
+        message = b.message;
+
+    let clicks = [...a.clicks, ...b.clicks];
+
+    let downKeys = {};
+    Object.assign(downKeys, a.downKeys);
+    for(let i in b.downKeys) {
+        if(b.downKeys[i])
+            downKeys[i] = true;
+    }
+
+    return {
+        downKeys,
+        clicks,
+        message,
+    }
+}
+
+export function emptyUIReport():UserInputReport {
+    return {
+        clicks: [],
+        downKeys: {},
     }
 }

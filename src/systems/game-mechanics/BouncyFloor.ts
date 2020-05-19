@@ -1,7 +1,7 @@
 import { System, IntrospectiveSystem } from "../system";
 import { PositionComponentState } from "./Position";
 import { VelocityComponentState } from "./Velocity";
-import { IOObject } from "../../Game";
+import { IOObject } from "../../EntityComponentSystem";
 
 export interface BouncyFloorComponentState {
     bounce?: number;

@@ -2,7 +2,7 @@ import { EntityComponentSystem } from "./EntityComponentSystem";
 import { GameStateUpdate } from "./GamestateTracker";
 import { GameState } from "./GameState";
 import { RenderSystem } from "./systems/rendering/RenderSystem";
-import { IOObject } from "./Game";
+import { IOObject } from "./EntityComponentSystem";
 
 export interface RendererConstructorOptions {
     canvas?: HTMLCanvasElement;

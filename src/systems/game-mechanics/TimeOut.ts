@@ -1,5 +1,5 @@
-import { System, IntrospectiveSystem } from "../system";
-import { IOObject } from "../../Game";
+import { IntrospectiveSystem } from "../system";
+import { IOObject } from "../../EntityComponentSystem";
 
 export interface TimeOutComponentState {
     timeRemaining: number;

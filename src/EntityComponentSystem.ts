@@ -1,9 +1,16 @@
 
 import { System } from "./systems/system";
-import { IOObject } from "./Game";
+
 
 import { GameStateTracker, GameStateUpdate } from "./GamestateTracker";
 import { deepAssign } from "./util";
+import { UserInputReport } from "./UserInputReporter";
+
+export interface IOObject {
+    userInput: UserInputReport[];
+    /** The number of seconds elapsed since the previous frame */
+    elapsed: number;
+}
 
 export function mergeGameStateUpdates(a:GameStateUpdate, b: GameStateUpdate) {
     if(b.create) {
@@ -63,6 +70,14 @@ export class EntityComponentSystem {
         }
 
         return stateUpdate;
+    }
+
+    get currentState() {
+        return this.stateTracker.state;
+    }
+
+    updateState(update: GameStateUpdate) {
+        this.stateTracker.modifyState(update);
     }
 }
 

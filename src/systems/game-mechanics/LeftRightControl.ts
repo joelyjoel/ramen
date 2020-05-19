@@ -1,9 +1,10 @@
 import { System, IntrospectiveSystem } from "../system";
 import { VelocityComponentState } from "./Velocity";
-import { IOObject, Game } from "../../Game";
+import { IOObject } from "../../EntityComponentSystem";
 
 export interface LeftRightControlComponentState {
     acceleration: number;
+    user: number;
 }
 
 export class LeftRightControlSystem extends IntrospectiveSystem<{velocity: VelocityComponentState, leftRightControl: LeftRightControlComponentState}> {
@@ -15,10 +16,11 @@ export class LeftRightControlSystem extends IntrospectiveSystem<{velocity: Veloc
     }
 
     individualBehaviour(e:{velocity: VelocityComponentState; leftRightControl: LeftRightControlComponentState}, io:IOObject) {
-        if(io.userInput.downKeys[37]) {
+        let userInput = io.userInput[e.leftRightControl.user];
+        if(userInput.downKeys[37]) {
             let xspeed = e.velocity.xspeed - (e.leftRightControl.acceleration || 5) * io.elapsed
             return {velocity: {xspeed}}
-        } else if(io.userInput.downKeys[39]) {
+        } else if(userInput.downKeys[39]) {
             return {
                 velocity: {xspeed: e.velocity.xspeed + e.leftRightControl.acceleration * io.elapsed}
             }
