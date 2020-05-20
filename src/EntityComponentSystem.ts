@@ -13,12 +13,12 @@ export interface IOObject {
 }
 
 export function mergeGameStateUpdates(a:GameStateUpdate, b: GameStateUpdate) {
-    if(b.create) {
-        if(a.create)
-            a.create.push(...b.create);
-        else
-            a.create = [...b.create];
-    }
+    // if(b.create) {
+    //     if(a.create)
+    //         a.create.push(...b.create);
+    //     else
+    //         a.create = [...b.create];
+    // }
 
     for(let id in b) {
         if(id == 'create')
@@ -32,7 +32,9 @@ export function mergeGameStateUpdates(a:GameStateUpdate, b: GameStateUpdate) {
     }
 }
 
-export interface ComponentState {};
+export interface ComponentState {
+    [key: string]: any
+};
 
 export class EntityComponentSystem {
     stateTracker: GameStateTracker;
@@ -42,6 +44,7 @@ export class EntityComponentSystem {
         this.stateTracker = new GameStateTracker(
             initialState, 
         );
+        this.checkSystems(systems);
         this.systems = systems;
 
         for(let system of systems) {
@@ -63,7 +66,6 @@ export class EntityComponentSystem {
             // Apply behaviour to the matches
             let groupUpdate = system.behaviour(groups, io);
             if(groupUpdate != undefined) {
-                this.stateTracker.assignIdToNewEntities(groupUpdate);
                 this.stateTracker.modifyState(groupUpdate);
 
                 mergeGameStateUpdates(stateUpdate, groupUpdate);
@@ -75,6 +77,15 @@ export class EntityComponentSystem {
 
     get currentState() {
         return this.stateTracker.state;
+    }
+
+    checkSystems(systems:System[]) {
+        for(let i=0; i<systems.length; ++i) {
+            let prefixI = systems[i].spawnPrefix;
+            for(let j=i+1; j<systems.length; ++j)
+                if(systems[j].spawnPrefix == prefixI)
+                    throw new Error(`System spawn prefix collision: ${prefixI}. Systems: ${systems[i].constructor} and ${systems[j].constructor}`)
+        }
     }
 }
 

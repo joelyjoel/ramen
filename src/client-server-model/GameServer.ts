@@ -55,7 +55,6 @@ export class GameServer {
         // Modify game state
         let addPlayerStateUpdate = this.gameDefinition.addPlayer(playerIndex, this.ecs.currentState);
         this.uireports.push(emptyUIReport())
-        this.ecs.stateTracker.assignIdToNewEntities(addPlayerStateUpdate);
         this.ecs.stateTracker.modifyState(addPlayerStateUpdate)
         socket.broadcast.emit('state update', addPlayerStateUpdate);
         socket.emit('initial state', this.ecs.currentState);
@@ -67,7 +66,6 @@ export class GameServer {
                 addPlayerStateUpdate
             );
 
-            this.ecs.stateTracker.assignIdToNewEntities(removePlayerStateUpdate);
             this.ecs.stateTracker.modifyState(removePlayerStateUpdate);
             socket.broadcast.emit('state update', removePlayerStateUpdate);
         })

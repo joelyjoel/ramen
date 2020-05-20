@@ -35,24 +35,24 @@ export const demoGame:GameDefinition = {
     },
 
     addPlayer: (playerIndex, state) => {
+        let id = `player${playerIndex}`
         return {
-            create: [
-                {
-                    position: {y: 100, x: 50 * playerIndex},
-                    velocity: {xspeed: 0, yspeed: 0},
+            [id]: {
+                id,
+                position: {y: 100, x: 50 * playerIndex},
+                velocity: {xspeed: 0, yspeed: 0},
 
-                    label: {text: `Player ${playerIndex}`},
+                label: {text: `Player ${playerIndex}`},
 
-                    leftRightControl: {acceleration: 10, user: playerIndex},
-                    message: {user: playerIndex}
-                }
-            ]
+                leftRightControl: {acceleration: 10, user: playerIndex},
+                message: {user: playerIndex}
+            }
         }
     },
 
     removePlayer(playerIndex, state, addPlayerStateUpdate) {
-        let update = {};
-        update[Object.keys(addPlayerStateUpdate)[0]] = null;
-        return update;
+        return {
+            [`player${playerIndex}`]: null,
+        }
     }
 }

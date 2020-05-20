@@ -6,6 +6,6 @@ export interface GameState {
 }
 
 export interface Entity {
-    id: number;
-    [componentName: string]: ComponentState;
+    id: string;
+    [componentName: string]: any;
 }

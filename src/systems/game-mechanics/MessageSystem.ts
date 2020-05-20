@@ -20,10 +20,12 @@ export class MessageSystem extends System {
         for(let id in group) {
             let e = group[id];
             const userInput = io.userInput[e.message.user];
-            if(userInput.message)
+            if(userInput.message) {
                 // Create a new message
+                let msgID = this.generateNewEntityId();
                 return {
-                    create: [{
+                    [msgID]: {
+                        id: msgID,
                         label: {text: userInput.message},
                         position: {
                             x: e.position.x,
@@ -34,8 +36,9 @@ export class MessageSystem extends System {
                             yspeed: -2,
                         },
                         timeOut: {timeRemaining: 10}
-                    }]
+                    }
                 }
+            }
         }
         return {}
     }

@@ -4,22 +4,22 @@ import { deepAssign, entityHasComponents } from "./util";
 import { ComponentState } from "./EntityComponentSystem";
 
 export interface GameStateUpdate {
-    create?: EntityUpdate[];
-    [key: number]: EntityUpdate | null;
+    // create?: EntityUpdate[];
+    [key: string]: EntityUpdate | null;
 }
 
 export interface EntityUpdate {
     [key: string]: ComponentStateUpdate;
 }
 
-export type ComponentStateUpdate = Partial<ComponentState>
+export type ComponentStateUpdate = any//Partial<ComponentState>
 
 export interface EntityGroup {
     name: string;
     /** Names of components required for membership of the group. */
     components: string[];
     /** ID's of entities in the group. */
-    entities: number[];
+    entities: string[];
 }
 
 export function getEntityGroupName(components:string[]) {
@@ -53,11 +53,11 @@ export class GameStateTracker {
             return this.groups[name];
 
         // Find entities which match the group.
-        let entities:number[] = [];
+        let entities:string[] = [];
         for(let id in this.state.entities) {
             let e = this.state.entities[id];
             if(entityHasComponents(e, components))
-                entities.push( parseInt(id) );
+                entities.push( id );
         }
 
         let group:EntityGroup = {
@@ -84,12 +84,12 @@ export class GameStateTracker {
 
     modifyState(updates:GameStateUpdate) {
         // For each entity,
-        if(updates.create) {
-            for(let newEntity of updates.create) {
-                let id = this.generateNewEntityId(updates);
-                this.createEntity(id, {id, ...newEntity});
-            }
-        }
+        // if(updates.create) {
+        //     for(let newEntity of updates.create) {
+        //         let id = this.generateNewEntityId(updates);
+        //         this.createEntity(id, {id, ...newEntity});
+        //     }
+        // }
         for(let id in updates) {
             // Skip special field(s)
             if(id == 'create')
@@ -104,28 +104,31 @@ export class GameStateTracker {
             if(updates[id] === null) {
                 // Delete entity
                 console.log(`deleting entity #${id}`)
-                this.deleteEntity(parseInt(id));
+                this.deleteEntity(id);
             } else {
                 // If entity exists,
                 if(this.state.entities[id]) {
                     // modify the entity.
-                    this.modifyEntity(parseInt(id), updates[id]);
+                    this.modifyEntity(id, updates[id]);
                 } else {
                     // otherwise create the entity.
-                    if(typeof updates[id].id == 'number')
-                        this.createEntity(parseInt(id), updates[id] as Entity);
+                    if(typeof updates[id].id == 'string')
+                        this.createEntity(id, updates[id] as Entity);
                     else
-                        throw "Attempt to modify entity which does not exist"
+                        throw new Error(
+                            `Attempt to modify entity (id = '${id}') which does not exist. Update = ${
+                                JSON.stringify(updates[id], null, 4)}`
+                        )
                 }
             }
         }
     }
 
-    fetchEntity(id) {
+    fetchEntity(id:string) {
         return this.state.entities[id];
     }
 
-    deleteEntity(id:number) {
+    deleteEntity(id:string) {
         let e = this.state.entities[id]
         delete this.state.entities[id];
         for(let name in this.groups) {
@@ -141,14 +144,14 @@ export class GameStateTracker {
         }
     }
 
-    createEntity(id:number, initialState:Entity) {
+    createEntity(id:string, initialState:Entity) {
         let e = {id};
         this.state.entities[id] = e;
 
         this.modifyEntity(id, initialState);
     }
 
-    modifyEntity(id:number, update:EntityUpdate) {
+    modifyEntity(id:string, update:EntityUpdate) {
         const e = this.state.entities[id];
         for(let component in update) {
             if(update[component] == null) {
@@ -205,20 +208,6 @@ export class GameStateTracker {
 
         this.idCounter = id;
 
-        return id;
-    }
-
-    /** Edits first argument */
-    assignIdToNewEntities(update:GameStateUpdate) {
-        if(update.create) {
-            for(let e of update.create) {
-                let id = this.generateNewEntityId(update);
-                e.id = id;
-                update[id] = e;
-            }
-            delete update.create;
-            return update;
-        } else
-            return update;
+        return id.toString();
     }
 }

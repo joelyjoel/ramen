@@ -11,6 +11,7 @@ export interface SystemConstructorOptions {
     writes?: string[];
     spawns?:boolean;
     deletes?: boolean;
+    spawnPrefix?: string
 }
 
 /** Base class for all systems */
@@ -20,6 +21,8 @@ export class System {
     readonly spawns: boolean;
     readonly groupNames: string[];
     readonly deletes: boolean;
+    spawnCounter: number;
+    spawnPrefix: string;
 
     constructor(options:SystemConstructorOptions) {
         const {
@@ -27,6 +30,7 @@ export class System {
             writes = [],
             spawns = false,
             deletes = false,
+            spawnPrefix = this.constructor.name.toLowerCase(),
         } = options
 
         this.reads = reads;
@@ -34,11 +38,18 @@ export class System {
         this.spawns = spawns;
         this.deletes = deletes;
 
+        this.spawnPrefix = spawnPrefix;
+        this.spawnCounter = 0;
+
         this.groupNames = this.reads.map(components => getEntityGroupName(components));
     }
 
     behaviour(groups: Group<any>[], io:IOObject):GameStateUpdate {
         throw `Behaviour is not implemented for this system.`
+    }
+
+    generateNewEntityId() {
+        return `${this.spawnPrefix}${this.spawnCounter++}`
     }
 }
 
