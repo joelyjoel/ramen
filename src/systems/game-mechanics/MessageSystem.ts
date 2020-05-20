@@ -19,24 +19,22 @@ export class MessageSystem extends System {
 
         for(let id in group) {
             let e = group[id];
-            const userInput = io.userInput[e.message.user]
+            const userInput = io.userInput[e.message.user];
             if(userInput.message)
-                if(e.message.user == 0) {
-                    // Create a new message
-                    return {
-                        create: [{
-                            label: {text: userInput.message},
-                            position: {
-                                x: e.position.x,
-                                y: e.position.y,
-                            },
-                            velocity: {
-                                xspeed: 0,
-                                yspeed: -2,
-                            },
-                            timeOut: {timeRemaining: 10}
-                        }]
-                    }
+                // Create a new message
+                return {
+                    create: [{
+                        label: {text: userInput.message},
+                        position: {
+                            x: e.position.x,
+                            y: e.position.y,
+                        },
+                        velocity: {
+                            xspeed: 0,
+                            yspeed: -2,
+                        },
+                        timeOut: {timeRemaining: 10}
+                    }]
                 }
         }
         return {}

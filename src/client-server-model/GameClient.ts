@@ -48,6 +48,10 @@ export class GameClient {
                 userInput,
             })
         })
+
+        this.socket.on('playerIndex', i => {
+            this.playerIndex = i;
+        })
     }
 
     sendUIReport() {

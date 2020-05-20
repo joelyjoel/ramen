@@ -14,4 +14,5 @@ export interface GameDefinition {
     frameRate: number;
 
     addPlayer: (playerIndex:number, state:GameState) => GameStateUpdate;
+    removePlayer: (playerIndex: number, state:GameState, addPlayerUpdate: GameStateUpdate) => GameStateUpdate;
 }

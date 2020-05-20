@@ -63,6 +63,7 @@ export class EntityComponentSystem {
             // Apply behaviour to the matches
             let groupUpdate = system.behaviour(groups, io);
             if(groupUpdate != undefined) {
+                this.stateTracker.assignIdToNewEntities(groupUpdate);
                 this.stateTracker.modifyState(groupUpdate);
 
                 mergeGameStateUpdates(stateUpdate, groupUpdate);
@@ -74,10 +75,6 @@ export class EntityComponentSystem {
 
     get currentState() {
         return this.stateTracker.state;
-    }
-
-    updateState(update: GameStateUpdate) {
-        this.stateTracker.modifyState(update);
     }
 }
 

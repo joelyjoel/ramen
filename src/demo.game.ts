@@ -40,10 +40,19 @@ export const demoGame:GameDefinition = {
                 {
                     position: {y: 100, x: 50 * playerIndex},
                     velocity: {xspeed: 0, yspeed: 0},
+
                     label: {text: `Player ${playerIndex}`},
-                    leftRightControl: {acceleration: 10, user: playerIndex}
+
+                    leftRightControl: {acceleration: 10, user: playerIndex},
+                    message: {user: playerIndex}
                 }
             ]
         }
+    },
+
+    removePlayer(playerIndex, state, addPlayerStateUpdate) {
+        let update = {};
+        update[Object.keys(addPlayerStateUpdate)[0]] = null;
+        return update;
     }
 }

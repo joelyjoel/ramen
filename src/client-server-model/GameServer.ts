@@ -50,12 +50,27 @@ export class GameServer {
             this.uireports[playerIndex] = mergeUserInputReports(this.uireports[playerIndex], uireport);
         })
 
+        socket.emit('playerIndex', playerIndex)
+
         // Modify game state
-        let stateUpdate = this.gameDefinition.addPlayer(playerIndex, this.ecs.currentState)
+        let addPlayerStateUpdate = this.gameDefinition.addPlayer(playerIndex, this.ecs.currentState);
         this.uireports.push(emptyUIReport())
-        this.ecs.updateState(stateUpdate)
-        socket.broadcast.emit('state update', stateUpdate);
+        this.ecs.stateTracker.assignIdToNewEntities(addPlayerStateUpdate);
+        this.ecs.stateTracker.modifyState(addPlayerStateUpdate)
+        socket.broadcast.emit('state update', addPlayerStateUpdate);
         socket.emit('initial state', this.ecs.currentState);
+
+        socket.on('disconnect', () => {
+            let removePlayerStateUpdate = this.gameDefinition.removePlayer(
+                playerIndex, 
+                this.ecs.currentState, 
+                addPlayerStateUpdate
+            );
+
+            this.ecs.stateTracker.assignIdToNewEntities(removePlayerStateUpdate);
+            this.ecs.stateTracker.modifyState(removePlayerStateUpdate);
+            socket.broadcast.emit('state update', removePlayerStateUpdate);
+        })
 
         this.players.push({
             socket,
@@ -75,6 +90,11 @@ export class GameServer {
 
     start() {
         setInterval(() => this.tick(), this.frameInterval * 1000)
+
+        setInterval(() => {
+            console.clear();
+            console.log(this.ecs.currentState.entities);
+        }, 250)
     }
 
     clearUIReports() {

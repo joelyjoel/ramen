@@ -33,13 +33,15 @@ export class GameStateTracker {
     groups: {
         [name: string]: EntityGroup;
     };
+    idCounter: number;
 
     constructor(initialState:GameState, groups:string[][] = []) {
         this.setState(initialState);
         for(let group of groups)
             this.addGroup(group);
 
-        console.log(this.groups);
+        this.idCounter = 0;
+
     }
 
     addGroup(components:string[]) {
@@ -84,7 +86,7 @@ export class GameStateTracker {
         // For each entity,
         if(updates.create) {
             for(let newEntity of updates.create) {
-                let id = this.generateNewEntityId();
+                let id = this.generateNewEntityId(updates);
                 this.createEntity(id, {id, ...newEntity});
             }
         }
@@ -101,7 +103,8 @@ export class GameStateTracker {
 
             if(updates[id] === null) {
                 // Delete entity
-                this.deleteEntity(id);
+                console.log(`deleting entity #${id}`)
+                this.deleteEntity(parseInt(id));
             } else {
                 // If entity exists,
                 if(this.state.entities[id]) {
@@ -109,9 +112,10 @@ export class GameStateTracker {
                     this.modifyEntity(parseInt(id), updates[id]);
                 } else {
                     // otherwise create the entity.
-                    // this.createEntity(parseInt(id), updates[id]);
-                    // On second thoughts i dont think this should be allowed
-                    throw "Attempt to modify entity which does not exist"
+                    if(typeof updates[id].id == 'number')
+                        this.createEntity(parseInt(id), updates[id] as Entity);
+                    else
+                        throw "Attempt to modify entity which does not exist"
                 }
             }
         }
@@ -121,14 +125,18 @@ export class GameStateTracker {
         return this.state.entities[id];
     }
 
-    deleteEntity(id) {
+    deleteEntity(id:number) {
         let e = this.state.entities[id]
         delete this.state.entities[id];
         for(let name in this.groups) {
             if(entityHasComponents(e, this.groups[name].components)) {
+                console.log(`Removing entity #${id} from group '${name}'`)
                 let idx = this.groups[name].entities.indexOf(id);
                 if(idx != -1)
                     this.groups[name].entities.splice(idx, 1);
+                else
+                    console.warn(`Entity #${id} was not in group as expected: '${name}'`)
+                
             }
         }
     }
@@ -186,10 +194,31 @@ export class GameStateTracker {
             this.addGroup(components);
     }
 
-    generateNewEntityId() {
-        let id = Object.keys(this.state.entities).length;
-        while(this.state.entities[id])
-            ++id;
+    generateNewEntityId(update?:GameStateUpdate) {
+        let id = this.idCounter + 1;
+        if(update)
+            while(this.state.entities[id] || update[id])
+                ++id;
+        else
+            while(this.state.entities[id])
+                ++id;
+
+        this.idCounter = id;
+
         return id;
+    }
+
+    /** Edits first argument */
+    assignIdToNewEntities(update:GameStateUpdate) {
+        if(update.create) {
+            for(let e of update.create) {
+                let id = this.generateNewEntityId(update);
+                e.id = id;
+                update[id] = e;
+            }
+            delete update.create;
+            return update;
+        } else
+            return update;
     }
 }
