@@ -23,6 +23,7 @@
     "@types/socket.io": "^2.1.6",
     "express": "^4.17.1",
     "socket.io": "^2.3.0",
+    "transformation-matrix": "^2.3.0",
     "uws": "^10.148.1"
   }
 }

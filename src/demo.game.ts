@@ -39,7 +39,7 @@ export const demoGame:GameDefinition = {
         return {
             [id]: {
                 id,
-                position: {y: 100, x: 50},
+                position: {y: 0, x: 0},
                 velocity: {xspeed: 0, yspeed: 0},
 
                 label: {text: `Player ${playerIndex}`},

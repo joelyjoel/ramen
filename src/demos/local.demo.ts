@@ -24,4 +24,7 @@ window.onload = function() {
         ecsStateMonitor.innerText = JSON.stringify(engine.ecs.currentState, null, 4);
         rendererStateMonitor.innerText = JSON.stringify(engine.renderer.currentState, null, 4)
     }, 250)
+
+    // @ts-ignore
+    window.game = engine;
 }

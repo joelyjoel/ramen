@@ -3,6 +3,7 @@ import { GameStateUpdate } from "./GamestateTracker";
 import { GameState } from "./GameState";
 import { RenderSystem } from "./systems/rendering/RenderSystem";
 import { IOObject } from "./EntityComponentSystem";
+import { Camera } from "./Camera";
 
 export interface RendererConstructorOptions {
     canvas?: HTMLCanvasElement;
@@ -11,7 +12,7 @@ export interface RendererConstructorOptions {
 }
 
 export class Renderer extends EntityComponentSystem {
-    camera: {x:number, y:number};
+    camera: Camera;
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
 
@@ -22,6 +23,7 @@ export class Renderer extends EntityComponentSystem {
 
         super({initialState, systems})
 
+        this.camera = new Camera({scale: 1/2, canvasHeight: canvas.height, canvasWidth: canvas.width})
 
         if(canvas)
             this.adoptCanvas(canvas);
@@ -40,7 +42,9 @@ export class Renderer extends EntityComponentSystem {
 
     renderUpdate(update:GameStateUpdate, io:IOObject) {
         this.stateTracker.modifyState(update);
+        this.ctx.setTransform(1,0,0,1,0,0)
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.camera.tick(this.currentState, io)
         this.cycleSystems(io);
        
     }
