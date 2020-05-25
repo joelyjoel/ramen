@@ -30,6 +30,6 @@ console.log(gameServer)
 gameServer.start();
 
 
-http.listen(3000, () => {
+http.listen(80, '0.0.0.0', () => {
     console.log('listening on *:3000');
 });

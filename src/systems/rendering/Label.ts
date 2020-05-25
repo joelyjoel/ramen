@@ -14,6 +14,7 @@ export interface LabelComponentState extends ComponentState {
 
 
 export interface LabelSystemEntityState {
+    id: number;
     label:LabelComponentState, 
     position:PositionComponentState
 }
@@ -27,7 +28,6 @@ export class LabelSystem extends RenderSystem<LabelSystemEntityState> {
     }
 
     individualBehaviour(e:LabelSystemEntityState, io:IOObject) {
-
         let x = e.position.x + (e.label.xOffset || 0);
         let y = e.position.y + (e.label.yOffset || 0);
 

@@ -24,7 +24,6 @@ export class LeftRightControlSystem extends IntrospectiveSystem<{velocity: Veloc
             return {
                 velocity: {xspeed: e.velocity.xspeed + e.leftRightControl.acceleration * io.elapsed}
             }
-        } else
-            return {}
+        }
     }
 }

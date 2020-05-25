@@ -21,12 +21,11 @@ export function mergeGameStateUpdates(a:GameStateUpdate, b: GameStateUpdate) {
     // }
 
     for(let id in b) {
-        if(id == 'create')
-            continue;
-        
-        if(a[id])
+        if(b[id] === null) {
+            a[id] = b[id];
+        } if(a[id] !== undefined)
             // WARNING: Could run into shared memory problems with this.
-            deepAssign(a[id], b[id]);
+            a[id] = deepAssign(a[id], b[id]);
         else
             a[id] = b[id];
     }
@@ -66,6 +65,7 @@ export class EntityComponentSystem {
             // Apply behaviour to the matches
             let groupUpdate = system.behaviour(groups, io);
             if(groupUpdate != undefined) {
+                // console.log(system.constructor.name, groupUpdate)
                 this.stateTracker.modifyState(groupUpdate);
 
                 mergeGameStateUpdates(stateUpdate, groupUpdate);

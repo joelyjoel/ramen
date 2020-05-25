@@ -1,6 +1,6 @@
 import { GameState, Entity } from "./GameState";
 import { timingSafeEqual } from "crypto";
-import { deepAssign, entityHasComponents } from "./util";
+import { deepAssign, entityHasComponents, cloneGameState } from "./util";
 import { ComponentState } from "./EntityComponentSystem";
 
 export interface GameStateUpdate {
@@ -36,7 +36,7 @@ export class GameStateTracker {
     idCounter: number;
 
     constructor(initialState:GameState, groups:string[][] = []) {
-        this.setState(initialState);
+        this.setState(cloneGameState(initialState));
         for(let group of groups)
             this.addGroup(group);
 
@@ -91,10 +91,6 @@ export class GameStateTracker {
         //     }
         // }
         for(let id in updates) {
-            // Skip special field(s)
-            if(id == 'create')
-                continue;
-
             if(updates[id] === undefined) {
                 // Skip, maybe log a warning because this shouldn't happen.
                 console.warn("This shouldn't happen.")
@@ -103,7 +99,6 @@ export class GameStateTracker {
 
             if(updates[id] === null) {
                 // Delete entity
-                console.log(`deleting entity #${id}`)
                 this.deleteEntity(id);
             } else {
                 // If entity exists,
@@ -112,12 +107,13 @@ export class GameStateTracker {
                     this.modifyEntity(id, updates[id]);
                 } else {
                     // otherwise create the entity.
-                    if(typeof updates[id].id == 'string')
+                    if(typeof updates[id].id == 'string'){
                         this.createEntity(id, updates[id] as Entity);
-                    else
+                    }else
                         throw new Error(
                             `Attempt to modify entity (id = '${id}') which does not exist. Update = ${
-                                JSON.stringify(updates[id], null, 4)}`
+                                JSON.stringify(updates, null, 4)
+                            }`
                         )
                 }
             }
@@ -145,6 +141,7 @@ export class GameStateTracker {
     }
 
     createEntity(id:string, initialState:Entity) {
+        console.log(`## Creating entitiy: ${id}\ninitial state:`, initialState)
         let e = {id};
         this.state.entities[id] = e;
 
@@ -173,8 +170,10 @@ export class GameStateTracker {
                 e[component] = update[component];
                 for(let name in this.groups) {
                     let group = this.groups[name]
-                    if(group.components.includes(component) && entityHasComponents(e, group.components))
+                    if(group.components.includes(component) && entityHasComponents(e, group.components)) {
+                        console.log(`## adding ${id} to group ${name}`)
                         group.entities.push(id);
+                    }
                         
                 }
             }

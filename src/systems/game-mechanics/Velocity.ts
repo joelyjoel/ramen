@@ -19,11 +19,12 @@ export class VelocitySystem extends IntrospectiveSystem<{
         })
     }
     individualBehaviour(e: {velocity: VelocityComponentState, position: PositionComponentState}) {
-        return {
-            position: {
-                x: e.position.x + e.velocity.xspeed,
-                y: e.position.y + e.velocity.yspeed,
+        if(e.velocity.xspeed != 0 || e.velocity.yspeed != 0)
+            return {
+                position: {
+                    x: e.position.x + e.velocity.xspeed,
+                    y: e.position.y + e.velocity.yspeed,
+                }
             }
-        }
     }
 }

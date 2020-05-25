@@ -40,8 +40,9 @@ export class Renderer extends EntityComponentSystem {
 
     renderUpdate(update:GameStateUpdate, io:IOObject) {
         this.stateTracker.modifyState(update);
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.cycleSystems(io);
+       
     }
 
     renderState(state:GameState, io:IOObject) {

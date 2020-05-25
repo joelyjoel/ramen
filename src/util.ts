@@ -1,4 +1,4 @@
-import { Entity } from "./GameState";
+import { Entity, GameState } from "./GameState";
 
 /** Merge two objects on a recursive, deep level. 
  * 
@@ -20,4 +20,8 @@ export function copyState(state) {
 
 export function entityHasComponents(e:Entity, components:string[]) {
     return components.every(c => e[c] != undefined)
+}
+
+export function cloneGameState(state:GameState):GameState {
+    return JSON.parse(JSON.stringify(state));
 }

@@ -5,6 +5,7 @@ module.exports = [
         entry: {
             main: './src/demo.ts',
             demoserver: './src/demo.server.ts',
+            "local.demo": './src/demos/local.demo.ts'
         },
         output: {
             path: path.resolve(__dirname, 'dist'),
@@ -32,27 +33,4 @@ module.exports = [
             __dirname: false,
         }
     },
-    // {
-    //     target: 'node',
-    //     entry: {
-    //         server: './src/server.ts',
-    //     },
-    //     output: {
-    //         path: path.resolve(__dirname, 'dist'),
-    //     },
-    
-    //     module: {
-    //         rules: [
-    //             {test:/.ts$/, use:'ts-loader'}
-    //         ]
-    //     },
-    
-    //     mode: 'development',
-
-    //     externals: ['socket.io', 'express'],
-    
-    //     resolve: {
-    //         extensions: ['.ts', '.tsx', '.js']
-    //     },
-    // }
 ]

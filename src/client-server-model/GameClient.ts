@@ -36,6 +36,7 @@ export class GameClient {
         userInput[this.playerIndex] = this.uiReporter.previewReport();
 
         this.socket.on('state update', (update:GameStateUpdate) => {
+            console.log('## state update:', update)
             this.renderer.renderUpdate(update, {
                 elapsed: this.frameInterval,
                 userInput,

@@ -76,16 +76,20 @@ export class IntrospectiveSystem<entitystate> extends System {
         let group = groups[0];
 
         let updates:GameStateUpdate = {}
+        let n = 0;
         for(let id in group) {
             let e = group[id];
             let result = this.individualBehaviour(e, io);
             if(result === undefined)
                 continue;
-            else
+            else {
                 updates[id] = result;
+                ++n;
+            }
         }
 
-        return updates;
+        if(n)
+            return updates;
     }
 
     individualBehaviour(e:entitystate, io:IOObject):EntityUpdate|null|undefined {

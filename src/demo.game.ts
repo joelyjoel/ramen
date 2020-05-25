@@ -10,7 +10,7 @@ import { BoxSpriteSystem } from "./systems/rendering/BoxSprite";
 import { LabelSystem } from "./systems/rendering/Label";
 
 export const demoGame:GameDefinition = {
-    frameRate: 32,
+    frameRate: 12,
 
     systems: [
         new GravitySystem,
@@ -39,7 +39,7 @@ export const demoGame:GameDefinition = {
         return {
             [id]: {
                 id,
-                position: {y: 100, x: 50 * playerIndex},
+                position: {y: 100, x: 50},
                 velocity: {xspeed: 0, yspeed: 0},
 
                 label: {text: `Player ${playerIndex}`},
@@ -52,7 +52,10 @@ export const demoGame:GameDefinition = {
 
     removePlayer(playerIndex, state, addPlayerStateUpdate) {
         return {
-            [`player${playerIndex}`]: null,
+            [`player${playerIndex}`]: {
+                timeOut: {timeRemaining: 5},
+                velocity: {yspeed: -3}
+            },
         }
     }
 }
