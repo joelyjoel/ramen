@@ -21,12 +21,15 @@ export class GameServer {
     socketio: SocketIO.Server;
     players: any;
     gameDefinition: GameDefinition;
+    t: number;
 
     constructor({game, socketio}:GameServerConstructorOptions) {
         this.ecs = new EntityComponentSystem({
             initialState: game.initialState,
             systems: game.systems,
         })
+
+        this.t = 0;
 
         this.gameDefinition = game
 
@@ -77,22 +80,25 @@ export class GameServer {
     }
 
     tick() {
+        this.t += this.frameInterval;
         let userInput = this.uireports;
         let stateUpdate = this.ecs.advanceState({
             elapsed: this.frameInterval,
             userInput,
+            t: this.t,
         })
         this.socketio.emit('state update', stateUpdate);
         this.clearUIReports();
     }
 
-    start() {
+    async start() {
+        await this.ecs.systemPromises
         setInterval(() => this.tick(), this.frameInterval * 1000)
 
-        setInterval(() => {
-            console.clear();
-            console.log(this.ecs.currentState.entities);
-        }, 250)
+        // setInterval(() => {
+        //     console.clear();
+        //     console.log(this.ecs.currentState.entities);
+        // }, 250)
     }
 
     clearUIReports() {

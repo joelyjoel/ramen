@@ -6,11 +6,12 @@ import { LeftRightControlSystem } from "./systems/game-mechanics/LeftRightContro
 import { MessageSystem } from "./systems/game-mechanics/MessageSystem";
 import { FrictionSystem } from "./systems/game-mechanics/Friction";
 import { TimeOutSystem } from "./systems/game-mechanics/TimeOut";
-import { BoxSpriteSystem } from "./systems/rendering/BoxSprite";
+// import { BoxSpriteSystem } from "./systems/rendering/BoxSprite";
 import { LabelSystem } from "./systems/rendering/Label";
+import { SpriteSystem } from "./systems/rendering/SpriteSystem";
 
 export const demoGame:GameDefinition = {
-    frameRate: 12,
+    frameRate: 32,
 
     systems: [
         new GravitySystem,
@@ -23,8 +24,20 @@ export const demoGame:GameDefinition = {
     ],
 
     renderSystems: [
-        new BoxSpriteSystem,
+        new SpriteSystem()
+            .addGridSprite({
+                url: 'images/LegAppleMan.png',
+                cellWidth: 32,
+                cellHeight: 32,
+                numberOfColumns: 7,
+                mappings: {
+                    'idle': [0],
+                    'walk': [42, 43, 44, 45]
+                },
+                frameRate: 12
+            }),
         new LabelSystem,
+
     ],
 
     initialState: {
@@ -43,6 +56,7 @@ export const demoGame:GameDefinition = {
                 velocity: {xspeed: 0, yspeed: 0},
 
                 label: {text: `Player ${playerIndex}`},
+                sprite: {sprite: 'walk', speed:1/2},
 
                 leftRightControl: {acceleration: 10, user: playerIndex},
                 message: {user: playerIndex}

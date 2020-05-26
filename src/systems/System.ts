@@ -45,11 +45,15 @@ export class System {
     }
 
     behaviour(groups: Group<any>[], io:IOObject):GameStateUpdate {
-        throw `Behaviour is not implemented for this system.`
+        throw `Behaviour is not implemented for ${this.constructor.name}.`
     }
 
     generateNewEntityId() {
         return `${this.spawnPrefix}${this.spawnCounter++}`
+    }
+
+    initialise() {
+        // Base class does nothing.
     }
 }
 

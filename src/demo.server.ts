@@ -13,6 +13,8 @@ import { demoGame } from './demo.game';
 import { GameServer } from './client-server-model/GameServer';
 const io = socketio(http);
 
+app.use('/images', express.static(path.join(__dirname, 'images')))
+
 // Serve the html file
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'demo.html'))
@@ -23,13 +25,10 @@ app.get('/main.js', (req, res) => {
     res.sendFile(path.join(__dirname, 'main.js'))
 })
 
-// 
-
 let gameServer = new GameServer({game: demoGame, socketio:io})
-console.log(gameServer)
 gameServer.start();
 
 
-http.listen(80, '0.0.0.0', () => {
+http.listen(3000, '0.0.0.0', () => {
     console.log('listening on *:3000');
 });

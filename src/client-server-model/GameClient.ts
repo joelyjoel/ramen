@@ -35,18 +35,22 @@ export class GameClient {
         let userInput = [];
         userInput[this.playerIndex] = this.uiReporter.previewReport();
 
+        let t = 0;
         this.socket.on('state update', (update:GameStateUpdate) => {
-            console.log('## state update:', update)
+            t += this.frameInterval;
             this.renderer.renderUpdate(update, {
                 elapsed: this.frameInterval,
                 userInput,
+                t: t,
             });
         })
 
         this.socket.on('initial state', (state: GameState) => {
+            t = 0;
             this.renderer.renderState(state, {
                 elapsed: this.frameInterval,
                 userInput,
+                t,
             })
         })
 
@@ -60,7 +64,8 @@ export class GameClient {
         this.socket.emit('uireport', report)
     }
 
-    start() {
+    async start() {
+        await this.renderer.systemPromises;
         setInterval(() => this.sendUIReport(), 1000 * this.frameInterval);
     }
 }

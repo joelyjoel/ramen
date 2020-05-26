@@ -16,6 +16,7 @@ export class LocalGame {
     frameRate: number;
     frameInterval: number;
     gameDefinition: GameDefinition;
+    t: number;
 
     constructor({game, canvas}: LocalGameConstructorOptions) {
         const {
@@ -26,6 +27,7 @@ export class LocalGame {
 
         this.gameDefinition = game;
 
+        this.t = 0;
 
         this.uiReporter = new UserInputReporter;
         this.uiReporter.adoptCanvas(canvas);
@@ -50,11 +52,13 @@ export class LocalGame {
     }
 
     tick() {
+        this.t += this.frameInterval;
         // Get ui report
         let userInput = this.uiReporter.getReport();
         let io = {
             elapsed: this.frameInterval,
             userInput: [userInput],
+            t: this.t,
         }
         
         // Advance state
@@ -66,17 +70,13 @@ export class LocalGame {
         } catch(e) {
             console.log('ecs state:', this.ecs.currentState)
             console.log('render state:', this.renderer.currentState)
-            // @ts-ignore
-            console.log('previous state update:', this.previousStateUpdate)
             throw e
         }
-
-        // @ts-ignore
-        this.previousStateUpdate = stateUpdate
     }
 
-    start() {
+    async start() {
+        await this.ecs.systemPromises;
+        await this.renderer.systemPromises
         setInterval(() => this.tick(), 1000 * this.frameInterval)
-        console.log(this.renderer.stateTracker.groups)
     }
 }

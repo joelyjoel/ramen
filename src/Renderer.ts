@@ -23,7 +23,7 @@ export class Renderer extends EntityComponentSystem {
 
         super({initialState, systems})
 
-        this.camera = new Camera({scale: 1/2, canvasHeight: canvas.height, canvasWidth: canvas.width})
+        this.camera = new Camera({scale: 1, canvasHeight: canvas.height, canvasWidth: canvas.width})
 
         if(canvas)
             this.adoptCanvas(canvas);
@@ -66,8 +66,8 @@ export class Renderer extends EntityComponentSystem {
 
             // Apply behaviour to the matches
             let groupUpdate = system.behaviour(groups, io);
-            // if(groupUpdate)
-            //     throw new Error('Renderer systems should not return state updates.')
+            if(groupUpdate)
+                throw new Error('Renderer systems should not return state updates.')
         }
     }
 }

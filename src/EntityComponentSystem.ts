@@ -10,16 +10,10 @@ export interface IOObject {
     userInput: UserInputReport[];
     /** The number of seconds elapsed since the previous frame */
     elapsed: number;
+    t: number;
 }
 
 export function mergeGameStateUpdates(a:GameStateUpdate, b: GameStateUpdate) {
-    // if(b.create) {
-    //     if(a.create)
-    //         a.create.push(...b.create);
-    //     else
-    //         a.create = [...b.create];
-    // }
-
     for(let id in b) {
         if(b[id] === null) {
             a[id] = b[id];
@@ -38,18 +32,21 @@ export interface ComponentState {
 export class EntityComponentSystem {
     stateTracker: GameStateTracker;
     systems: System[];
+    systemPromises: Promise<any>
+    t: number;
 
     constructor({initialState, systems}) {
+        this.t = 0;
+
         this.stateTracker = new GameStateTracker(
             initialState, 
         );
-        this.checkSystems(systems);
-        this.systems = systems;
 
-        for(let system of systems) {
-            for(let components of system.reads)
-                this.stateTracker.addGroup(components);
-        }
+        this.systems = [];
+
+        this.systemPromises = Promise.all(
+            systems.map(sys => this.addSystem(sys))
+        );
     }
 
     advanceState(io:IOObject) {
@@ -65,12 +62,14 @@ export class EntityComponentSystem {
             // Apply behaviour to the matches
             let groupUpdate = system.behaviour(groups, io);
             if(groupUpdate != undefined) {
-                // console.log(system.constructor.name, groupUpdate)
                 this.stateTracker.modifyState(groupUpdate);
 
                 mergeGameStateUpdates(stateUpdate, groupUpdate);
             }
         }
+
+
+        ++this.t;
 
         return stateUpdate;
     }
@@ -79,13 +78,16 @@ export class EntityComponentSystem {
         return this.stateTracker.state;
     }
 
-    checkSystems(systems:System[]) {
-        for(let i=0; i<systems.length; ++i) {
-            let prefixI = systems[i].spawnPrefix;
-            for(let j=i+1; j<systems.length; ++j)
-                if(systems[j].spawnPrefix == prefixI)
-                    throw new Error(`System spawn prefix collision: ${prefixI}. Systems: ${systems[i].constructor} and ${systems[j].constructor}`)
-        }
+    async addSystem(system:System) {
+        if(this.systems.some(a => a.spawnPrefix == system.spawnPrefix))
+            throw new Error(`System spawnPrefix collision: ${system.spawnPrefix}.`)
+
+        for(let components of system.reads)
+            this.stateTracker.addGroup(components);
+        
+        this.systems.push(system);
+
+        await system.initialise();
     }
 }
 
